@@ -5,17 +5,19 @@ Start it with `python app.py`, then call an operation with two numbers:
     GET /divide?a=9&b=2   ->  {"operation": "divide", "a": 9.0, "b": 2.0, "result": 4.5}
 """
 
-from flask import Flask, jsonify, request
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
-app = Flask(__name__)
+app = FastAPI(title="Calculator backend")
 
 
-def _number(name):
+def _number(request, name):
     """Read a number from the query string.
 
     Returns (value, error). Exactly one of the two is None.
     """
-    raw = request.args.get(name)
+    raw = request.query_params.get(name)
     if raw is None:
         return None, f"missing parameter '{name}'"
     try:
@@ -39,48 +41,48 @@ def _calculate(operation, a, b):
     raise KeyError(operation)
 
 
-def _handle(operation):
+def _handle(request, operation):
     """Shared body for every operation route: read a and b, calculate, reply."""
-    a, error = _number("a")
+    a, error = _number(request, "a")
     if error is not None:
-        return jsonify({"error": error}), 400
+        return JSONResponse({"error": error}, status_code=400)
 
-    b, error = _number("b")
+    b, error = _number(request, "b")
     if error is not None:
-        return jsonify({"error": error}), 400
+        return JSONResponse({"error": error}, status_code=400)
 
     try:
         result = _calculate(operation, a, b)
     except ZeroDivisionError as exc:
-        return jsonify({"error": str(exc)}), 400
+        return JSONResponse({"error": str(exc)}, status_code=400)
 
-    return jsonify({"operation": operation, "a": a, "b": b, "result": result})
+    return {"operation": operation, "a": a, "b": b, "result": result}
 
 
 @app.get("/health")
 def health():
-    return jsonify({"status": "ok"})
+    return {"status": "ok"}
 
 
 @app.get("/add")
-def add():
-    return _handle("add")
+def add(request: Request):
+    return _handle(request, "add")
 
 
 @app.get("/subtract")
-def subtract():
-    return _handle("subtract")
+def subtract(request: Request):
+    return _handle(request, "subtract")
 
 
 @app.get("/multiply")
-def multiply():
-    return _handle("multiply")
+def multiply(request: Request):
+    return _handle(request, "multiply")
 
 
 @app.get("/divide")
-def divide():
-    return _handle("divide")
+def divide(request: Request):
+    return _handle(request, "divide")
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    uvicorn.run("app:app", host="127.0.0.1", port=5000, reload=True)

@@ -38,6 +38,31 @@ curl "http://127.0.0.1:5000/divide?a=9&b=2"
 <http://127.0.0.1:5000/docs>. To use a different port, change the `port=` value at the
 bottom of `app.py`.
 
+## Run with Docker
+
+If you'd rather not install Python, run it in a container instead:
+
+```
+docker compose up --build
+```
+
+The same calls then work on <http://localhost:5000>:
+
+```
+curl "http://localhost:5000/divide?a=9&b=2"
+```
+
+Stop it with `docker compose down`. To use Docker without Compose:
+
+```
+docker build -t finn-calculator .
+docker run --rm -p 5000:5000 finn-calculator
+```
+
+The image starts Uvicorn on `0.0.0.0:5000` so the port is reachable from outside the
+container, and publishes it back to port 5000 on your machine. The code is copied into
+the image, so after changing `app.py` run `docker compose up --build` again to pick it up.
+
 ## Test
 
 ```

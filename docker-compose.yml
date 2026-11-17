@@ -1,0 +1,10 @@
+# Run locally with:  docker compose up --build
+# Then try:           curl "http://localhost:5000/divide?a=9&b=2"
+# Stop it with:       docker compose down
+
+services:
+  calculator:
+    build: .
+    image: finn-calculator
+    ports:
+      - "5000:5000"

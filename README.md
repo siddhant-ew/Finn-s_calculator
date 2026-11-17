@@ -35,8 +35,9 @@ curl "http://127.0.0.1:5000/divide?a=9&b=2"
 
 `python app.py` starts the app with [Uvicorn](https://www.uvicorn.org/);
 `uvicorn app:app --reload` works too. FastAPI also serves interactive API docs at
-<http://127.0.0.1:5000/docs>. To use a different port, change the `port=` value at the
-bottom of `app.py`.
+<http://127.0.0.1:5000/docs>, where every operation has `a` and `b` input boxes: press
+**Try it out**, fill them in and press **Execute** to make the call from the browser. To
+use a different port, change the `port=` value at the bottom of `app.py`.
 
 ## Run with Docker
 
@@ -86,6 +87,7 @@ Every error comes back as JSON with an `error` message.
 ## Adding another operation
 
 1. Add the maths to `_calculate` in `app.py`.
-2. Add a route that calls `_handle(request, "your-operation")`, following the ones already there.
+2. Add a route with `a` and `b` query parameters that calls `_handle("your-operation", a, b)`,
+   following the ones already there.
 3. Add a case to the table in `test_app.py`.
 4. Add a row to the table at the top of this README.

@@ -5,19 +5,20 @@ Start it with `python app.py`, then call an operation with two numbers:
     GET /divide?a=9&b=2   ->  {"operation": "divide", "a": 9.0, "b": 2.0, "result": 4.5}
 """
 
+from typing import Optional
+
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 
 app = FastAPI(title="Calculator backend")
 
 
-def _number(request, name):
-    """Read a number from the query string.
+def _number(raw, name):
+    """Turn one query value into a number.
 
     Returns (value, error). Exactly one of the two is None.
     """
-    raw = request.query_params.get(name)
     if raw is None:
         return None, f"missing parameter '{name}'"
     try:
@@ -41,13 +42,13 @@ def _calculate(operation, a, b):
     raise KeyError(operation)
 
 
-def _handle(request, operation):
-    """Shared body for every operation route: read a and b, calculate, reply."""
-    a, error = _number(request, "a")
+def _handle(operation, raw_a, raw_b):
+    """Shared body for every operation route: check a and b, calculate, reply."""
+    a, error = _number(raw_a, "a")
     if error is not None:
         return JSONResponse({"error": error}, status_code=400)
 
-    b, error = _number(request, "b")
+    b, error = _number(raw_b, "b")
     if error is not None:
         return JSONResponse({"error": error}, status_code=400)
 
@@ -65,23 +66,35 @@ def health():
 
 
 @app.get("/add")
-def add(request: Request):
-    return _handle(request, "add")
+def add(
+    a: Optional[str] = Query(None, description="First number, for example 2"),
+    b: Optional[str] = Query(None, description="Second number, for example 3"),
+):
+    return _handle("add", a, b)
 
 
 @app.get("/subtract")
-def subtract(request: Request):
-    return _handle(request, "subtract")
+def subtract(
+    a: Optional[str] = Query(None, description="First number, for example 7"),
+    b: Optional[str] = Query(None, description="Second number, for example 4"),
+):
+    return _handle("subtract", a, b)
 
 
 @app.get("/multiply")
-def multiply(request: Request):
-    return _handle(request, "multiply")
+def multiply(
+    a: Optional[str] = Query(None, description="First number, for example 6"),
+    b: Optional[str] = Query(None, description="Second number, for example 7"),
+):
+    return _handle("multiply", a, b)
 
 
 @app.get("/divide")
-def divide(request: Request):
-    return _handle(request, "divide")
+def divide(
+    a: Optional[str] = Query(None, description="First number, for example 9"),
+    b: Optional[str] = Query(None, description="Second number, for example 2"),
+):
+    return _handle("divide", a, b)
 
 
 if __name__ == "__main__":

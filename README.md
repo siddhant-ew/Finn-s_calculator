@@ -4,7 +4,7 @@ This is Finn's project.
 
 ## Calculator backend
 
-A small calculator API written in Python with [Flask](https://flask.palletsprojects.com/).
+A small calculator API written in Python with [FastAPI](https://fastapi.tiangolo.com/).
 Every operation takes two numbers as query parameters, `a` and `b`, and answers with JSON.
 
 | Operation | Call | Answer |
@@ -33,7 +33,10 @@ The server listens on <http://127.0.0.1:5000>. Try:
 curl "http://127.0.0.1:5000/divide?a=9&b=2"
 ```
 
-To use a different port, change the `port=` value at the bottom of `app.py`.
+`python app.py` starts the app with [Uvicorn](https://www.uvicorn.org/);
+`uvicorn app:app --reload` works too. FastAPI also serves interactive API docs at
+<http://127.0.0.1:5000/docs>. To use a different port, change the `port=` value at the
+bottom of `app.py`.
 
 ## Test
 
@@ -53,11 +56,11 @@ Every error comes back as JSON with an `error` message.
 | `a` or `b` missing | 400 | `{"error": "missing parameter 'b'"}` |
 | `a` or `b` not a number | 400 | `{"error": "parameter 'a' must be a number, got 'two'"}` |
 | dividing by zero | 400 | `{"error": "cannot divide by zero"}` |
-| no such operation | 404 | Flask's default 404 page |
+| no such operation | 404 | FastAPI's default body, `{"detail": "Not Found"}` |
 
 ## Adding another operation
 
 1. Add the maths to `_calculate` in `app.py`.
-2. Add a route that calls `_handle("your-operation")`, following the ones already there.
+2. Add a route that calls `_handle(request, "your-operation")`, following the ones already there.
 3. Add a case to the table in `test_app.py`.
 4. Add a row to the table at the top of this README.

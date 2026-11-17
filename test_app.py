@@ -1,13 +1,14 @@
 """Tests for the calculator backend in app.py."""
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app import app
 
 
 @pytest.fixture
 def client():
-    return app.test_client()
+    return TestClient(app)
 
 
 @pytest.mark.parametrize(
@@ -23,7 +24,7 @@ def test_operations(client, operation, a, b, expected):
     response = client.get(f"/{operation}?a={a}&b={b}")
 
     assert response.status_code == 200
-    body = response.get_json()
+    body = response.json()
     assert body["operation"] == operation
     assert body["a"] == float(a)
     assert body["b"] == float(b)
@@ -34,28 +35,28 @@ def test_negative_numbers(client):
     response = client.get("/multiply?a=-3&b=4")
 
     assert response.status_code == 200
-    assert response.get_json()["result"] == -12.0
+    assert response.json()["result"] == -12.0
 
 
 def test_decimals(client):
     response = client.get("/add?a=0.5&b=0.25")
 
     assert response.status_code == 200
-    assert response.get_json()["result"] == 0.75
+    assert response.json()["result"] == 0.75
 
 
 def test_health(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.get_json() == {"status": "ok"}
+    assert response.json() == {"status": "ok"}
 
 
 def test_divide_by_zero(client):
     response = client.get("/divide?a=5&b=0")
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "cannot divide by zero"}
+    assert response.json() == {"error": "cannot divide by zero"}
 
 
 def test_unknown_operation(client):
@@ -68,13 +69,13 @@ def test_missing_parameter(client):
     response = client.get("/add?a=2")
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "missing parameter 'b'"}
+    assert response.json() == {"error": "missing parameter 'b'"}
 
 
 def test_not_a_number(client):
     response = client.get("/add?a=two&b=3")
 
     assert response.status_code == 400
-    assert response.get_json() == {
+    assert response.json() == {
         "error": "parameter 'a' must be a number, got 'two'"
     }
